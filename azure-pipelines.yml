@@ -58,7 +58,7 @@ jobs:
       export LIBRARY_PATH=$OSX_SDK_DIR/usr/lib
 
       # work around the frameworks not being visible when compiling with -isysroot $OSX_SDK_DIR
-      sed -i .bak -e 's/osxkeychain.*SUBMAKE.*/& LDFLAGS="\$(LDFLAGS)" -iframework \/System\/Library\/Frameworks\/"/' Makefile ||
+      sed -i .bak -e 's/osxkeychain.*SUBMAKE.*/& LDFLAGS="\$(LDFLAGS) -iframework \/System\/Library\/Frameworks\/"/' Makefile ||
       die "Could not edit Makefile"
       mkdir -p include
       test -h include/Security ||
