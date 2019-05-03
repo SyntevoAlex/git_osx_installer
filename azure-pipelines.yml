@@ -1,5 +1,5 @@
 jobs:
-- job: build-dmg
+- job: build_dmg
   displayName: Build .dmg
   condition: succeeded()
   pool: Hosted macOS
