@@ -1,0 +1,90 @@
+jobs:
+- job: build-dmg
+  displayName: Build .dmg
+  condition: succeeded()
+  pool: Hosted macOS
+  steps:
+  - bash: |
+      brew install autoconf automake asciidoc docbook xmlto
+      brew link --force gettext
+    displayName: Install Git's build dependencies
+  - bash: |
+      git init git &&
+      git -C git fetch --depth=1 https://github.com/git/git master
+    displayName: Clone Git's source code
+  - bash: |
+      # `gettext` is keg-only
+      export LDFLAGS="-L/usr/local/opt/gettext/lib"
+      export CFLAGS="-I/usr/local/opt/gettext/include"
+
+      # To make use of the catalogs...
+      export XML_CATALOG_FILES="/usr/local/etc/xml/catalog"
+
+      PATH=/usr/local/bin:$PATH \
+      make -C git -j$(nproc) DEVELOPER=1 GIT-VERSION-FILE dist dist-doc
+    displayName: Build GIT-VERSION-FILE and .tar.gz files
+  - bash: |
+      die () {
+        echo "$*" >&2
+        exit 1
+      }
+
+      # `gettext` is keg-only
+      export LDFLAGS="-L/usr/local/opt/gettext/lib"
+      export CFLAGS="-I/usr/local/opt/gettext/include"
+      export CURL_LDFLAGS="-lcurl"
+
+      VERSION="`sed -n 's/^GIT_VERSION = //p' <git/GIT-VERSION-FILE`"
+      test -n "$VERSION" ||
+      die "Could not determine version!"
+      export VERSION
+
+      dir=git-$VERSION
+      test ! -e $dir ||
+      rm $dir ||
+      die "Could not remove $dir"
+      ln -s .. $dir
+
+      mkdir -p build &&
+      cp git/git-$VERSION.tar.gz git/git-manpages-$VERSION.tar.gz build/ ||
+      die "Could not copy .tar.gz files"
+
+      # see https://stackoverflow.com/questions/1365211/error-in-xcode-project-ld-library-not-found-for-lcrt1-10-6-o/16102800, to fix the -lcrt1.10.6.o problem
+      PLATFORMS_DIR=/Applications/Xcode.app/Contents/Developer/Platforms
+      OSX_SDK_DIR=$PLATFORMS_DIR/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+      export C_INCLUDE_PATH=$OSX_SDK_DIR/usr/include
+      export LIBRARY_PATH=$OSX_SDK_DIR/usr/lib
+
+      # work around the frameworks not being visible when compiling with -isysroot $OSX_SDK_DIR
+      sed -i .bak -e 's/osxkeychain.*SUBMAKE.*/& LDFLAGS="\$(LDFLAGS)" -iframework \/System\/Library\/Frameworks\/"/' Makefile ||
+      die "Could not edit Makefile"
+      mkdir -p include
+      test -h include/Security ||
+      ln -s /System/Library/Frameworks/Security.framework/Headers/ include/Security
+      test -h include/CoreFoundation ||
+      ln -s /System/Library/Frameworks//CoreFoundation.framework/Versions/A/Headers/ include/CoreFoundation
+      export C_INCLUDE_PATH=$C_INCLUDE_PATH:$PWD/include
+
+      # make sure that .../usr/local/git/share/man/ exists
+      sed -i .bak -e 's/\(tar .*-C \)\(.*\/share\/man\)$/mkdir -p \2 \&\& &/' \
+          Makefile || die "Could not edit Makefile"
+      cat Makefile
+
+      make vars
+
+      PATH=/usr/local/bin:/System/Library/Frameworks:$PATH \
+      make OSX_VERSION=10.6 C_INCLUDE_PATH="$C_INCLUDE_PATH" V=1 \
+          build/intel-universal-snow-leopard/git-$VERSION/osx-built-keychain ||
+      die "Build failed"
+
+      PATH=/usr/local/bin:$PATH \
+      make OSX_VERSION=10.6 C_INCLUDE_PATH="$C_INCLUDE_PATH" V=1 \
+          --debug=verbose image ||
+      die "Build failed"
+
+      mv *.dmg "$(Build.ArtifactStagingDirectory)"/
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish .dmg'
+    condition: failed()
+    inputs:
+      ArtifactName: installer
