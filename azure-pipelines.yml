@@ -36,6 +36,12 @@ jobs:
       export CFLAGS="-I/usr/local/opt/gettext/include"
       export CURL_LDFLAGS="-lcurl"
 
+      # Make sure Security/Security.h is found, see
+      # https://medium.com/@rossbulat/hi-corey-6f2ae707ba9d
+      xcode-select --install &&
+      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target / ||
+      die "Could not make sure that Security/Security.h is there"
+
       VERSION="`sed -n 's/^GIT_VERSION = //p' <git/GIT-VERSION-FILE`"
       test -n "$VERSION" ||
       die "Could not determine version!"
