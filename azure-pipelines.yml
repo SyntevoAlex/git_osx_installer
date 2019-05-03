@@ -21,7 +21,8 @@ jobs:
       export XML_CATALOG_FILES="/usr/local/etc/xml/catalog"
 
       PATH=/usr/local/bin:$PATH \
-      make -C git -j$(nproc) DEVELOPER=1 GIT-VERSION-FILE dist dist-doc
+      make -C git -j$(sysctl -n hw.physicalcpu) DEVELOPER=1 \
+        GIT-VERSION-FILE dist dist-doc
     displayName: Build GIT-VERSION-FILE and .tar.gz files
   - bash: |
       die () {
