@@ -80,7 +80,7 @@ jobs:
       make vars
 
       PATH=/usr/local/bin:/System/Library/Frameworks:$PATH \
-      make OSX_VERSION=10.6 C_INCLUDE_PATH="$C_INCLUDE_PATH" V=1 \
+      make OSX_VERSION=10.6 V=1 \
           build/intel-universal-snow-leopard/git-$VERSION/osx-built-keychain ||
       die "Build failed"
 
