@@ -36,6 +36,7 @@ ARCH_FLAGS_i386 := -arch i386
 ARCH_FLAGS_x86_64 := -arch x86_64
 
 OSXKEYCHAIN_CFLAGS := -mmacosx-version-min=$(OSX_VERSION) -DMACOSX_DEPLOYMENT_TARGET=$(OSX_VERSION) $(ARCH_FLAGS_${ARCH_CODE})
+OSXKEYCHAIN_LDFLAGS := -mmacosx-version-min=$(OSX_VERSION) -DMACOSX_DEPLOYMENT_TARGET=$(OSX_VERSION) $(ARCH_FLAGS_${ARCH_CODE})
 CFLAGS := $(TARGET_FLAGS) $(ARCH_FLAGS_${ARCH_CODE})
 LDFLAGS := $(TARGET_FLAGS) $(ARCH_FLAGS_${ARCH_CODE})
 
@@ -109,7 +110,7 @@ $(BUILD_DIR)/git-$(VERSION)/osx-built: $(BUILD_DIR)/git-$(VERSION)/Makefile
 	touch $@
 
 $(BUILD_DIR)/git-$(VERSION)/osx-built-keychain: $(BUILD_DIR)/git-$(VERSION)/Makefile
-	cd $(BUILD_DIR)/git-$(VERSION)/contrib/credential/osxkeychain; $(SUBMAKE) CFLAGS="$(OSXKEYCHAIN_CFLAGS) -g -O2 -Wall"
+	cd $(BUILD_DIR)/git-$(VERSION)/contrib/credential/osxkeychain; $(SUBMAKE) CFLAGS="$(OSXKEYCHAIN_CFLAGS) -g -O2 -Wall" LDFLAGS="$(OSXKEYCHAIN_LDFLAGS)"
 	touch $@
 
 $(BUILD_DIR)/git-$(VERSION)/osx-built-subtree: $(BUILD_DIR)/git-$(VERSION)/Makefile | setup
