@@ -62,6 +62,7 @@ jobs:
       export C_INCLUDE_PATH=$OSX_SDK_DIR/usr/include
       export LIBRARY_PATH=$OSX_SDK_DIR/usr/lib
 
+      PATH=/usr/local/bin:$PATH \
       make OSX_VERSION=10.6 V=1 \
           build/intel-universal-snow-leopard/git-$VERSION/osx-built-keychain ||
       die "Failed to build git-credential-osxkeychain"
