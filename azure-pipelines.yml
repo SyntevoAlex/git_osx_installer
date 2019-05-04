@@ -90,8 +90,7 @@ jobs:
       #die "Build failed"
 
       PATH=/usr/local/bin:$PATH \
-      make OSX_VERSION=10.6 C_INCLUDE_PATH="$C_INCLUDE_PATH" V=1 \
-          -j$(sysctl -n hw.physicalcpu) --debug=verbose image ||
+      make OSX_VERSION=10.6 C_INCLUDE_PATH="$C_INCLUDE_PATH" V=1 image ||
       die "Build failed"
 
       mv *.dmg "$(Build.ArtifactStagingDirectory)"/
