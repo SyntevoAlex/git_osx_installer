@@ -94,6 +94,7 @@ jobs:
       die "Build failed"
 
       mv *.dmg "$(Build.ArtifactStagingDirectory)"/
+    displayName: Build .dmg
   - task: PublishBuildArtifacts@1
     displayName: 'Publish .dmg'
     condition: failed()
