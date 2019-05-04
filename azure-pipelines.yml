@@ -97,6 +97,6 @@ jobs:
     displayName: Build .dmg
   - task: PublishBuildArtifacts@1
     displayName: 'Publish .dmg'
-    condition: failed()
+    condition: succeeded()
     inputs:
       ArtifactName: installer
