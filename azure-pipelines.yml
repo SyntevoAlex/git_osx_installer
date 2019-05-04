@@ -56,15 +56,15 @@ jobs:
       cp git/git-$VERSION.tar.gz git/git-manpages-$VERSION.tar.gz build/ ||
       die "Could not copy .tar.gz files"
 
-      make OSX_VERSION=10.6 V=1 \
-          build/intel-universal-snow-leopard/git-$VERSION/osx-built-keychain ||
-      die "Failed to build git-credential-osxkeychain"
-
       # see https://stackoverflow.com/questions/1365211/error-in-xcode-project-ld-library-not-found-for-lcrt1-10-6-o/16102800, to fix the -lcrt1.10.6.o problem
       PLATFORMS_DIR=/Applications/Xcode.app/Contents/Developer/Platforms
       OSX_SDK_DIR=$PLATFORMS_DIR/MacOSX.platform/Developer/SDKs/MacOSX.sdk
       export C_INCLUDE_PATH=$OSX_SDK_DIR/usr/include
       export LIBRARY_PATH=$OSX_SDK_DIR/usr/lib
+
+      make OSX_VERSION=10.6 V=1 \
+          build/intel-universal-snow-leopard/git-$VERSION/osx-built-keychain ||
+      die "Failed to build git-credential-osxkeychain"
 
       # work around the frameworks not being visible when compiling with -isysroot $OSX_SDK_DIR
       sed -i .bak -e 's/osxkeychain.*SUBMAKE.*/& LDFLAGS="\$(LDFLAGS) -iframework \/System\/Library\/Frameworks\/"/' Makefile ||
